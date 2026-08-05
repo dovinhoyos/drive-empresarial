@@ -23,7 +23,7 @@ testing:
   coverage: false       # no JaCoCo configured
   quality:
     linter: false       # no checkstyle/PMD/SpotBugs
-    formatter: false    # no spotless; IntelliJ defaults
+    formatter: true     # Spotless 2.44.3 (Google Java Format); ./mvnw spotless:check in CI
     typechecker: n/a    # compiled Java (javac)
 
 rules:
