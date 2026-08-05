@@ -1,5 +1,4 @@
--- V001: Create DRIVE (Sistema Integral de Calidad) tables
--- Source of truth: Laravel DRIVE module schema
+-- V001: Create DRIVE module tables
 
 -- ============================================================
 -- drive_processes

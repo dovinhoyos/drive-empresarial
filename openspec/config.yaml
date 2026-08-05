@@ -28,7 +28,7 @@ testing:
 
 rules:
   proposal:
-    - Include migration notes from the Laravel DRIVE module (data + behavior parity)
+    - Include data migration notes when applicable
     - Include rollback plan for risky changes
   specs:
     - Use Given/When/Then for scenarios
