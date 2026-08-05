@@ -54,10 +54,10 @@ Order note: commits 6/8 depend on 9 — implement enums+converter first; PR grou
 
 ## Phase 3: DriveDocument (commit 6)
 
-- [ ] 3.1 RED: `DriveDocumentRepositoryTest.java` — `findAllByDeletedAtIsNull()` excludes deleted, `findByProcessIdAndDeletedAtIsNull(1L)`, status roundtrip (UNDER_REVIEW)
-- [ ] 3.2 GREEN: `model/DriveDocument.java` — `@Table("drive_documents")`; `@ManyToOne(fetch=LAZY)` process + `@JoinColumn("drive_process_id")`; status defaults DRAFT; currentVersion "1.0"; deletedAt; `@JsonIgnore` versions/logs; `@PrePersist/@PreUpdate`
-- [ ] 3.3 GREEN: `repository/DriveDocumentRepository.java` — both derived queries (processId traverses `process.id`)
-- [ ] 3.4 RED+GREEN: serialization test (ObjectMapper) — DriveProcess JSON excludes `documents`
+- [x] 3.1 RED: `DriveDocumentRepositoryTest.java` — `findAllByDeletedAtIsNull()` excludes deleted, `findByProcessIdAndDeletedAtIsNull(1L)`, status roundtrip (UNDER_REVIEW)
+- [x] 3.2 GREEN: `model/DriveDocument.java` — `@Table("drive_documents")`; `@ManyToOne(fetch=LAZY)` process + `@JoinColumn("drive_process_id")`; status defaults DRAFT; currentVersion "1.0"; deletedAt; `@JsonIgnore` versions/logs; `@PrePersist/@PreUpdate`
+- [x] 3.3 GREEN: `repository/DriveDocumentRepository.java` — both derived queries (processId traverses `process.id`)
+- [x] 3.4 RED+GREEN: serialization test (ObjectMapper) — DriveProcess JSON excludes `documents`
 
 ## Phase 4: DriveVersion (commit 7)
 
