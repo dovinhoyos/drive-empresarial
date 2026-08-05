@@ -47,10 +47,10 @@ Order note: commits 6/8 depend on 9 — implement enums+converter first; PR grou
 
 ## Phase 2: DriveProcess (commit 5)
 
-- [ ] 2.1 RED: `DriveProcessRepositoryTest.java` (`@DataJpaTest`, `@ActiveProfiles(\"test\")`) — order-by-name, empty set, timestamps set
+- [x] 2.1 RED: `DriveProcessRepositoryTest.java` (`@DataJpaTest`, `@ActiveProfiles(\"test\")`) — order-by-name, empty set, timestamps set
 - [x] 2.2 GREEN: `model/DriveProcess.java` — `@Table(\"drive_processes\")`, IDENTITY id, name/prefix/groupType, `@OneToMany(mappedBy=\"process\")` `@JsonIgnore` documents, no cascade, `@PrePersist/@PreUpdate`, `@Getter @Setter @NoArgsConstructor`
 - [x] 2.3 GREEN: `repository/DriveProcessRepository.java` — `JpaRepository<DriveProcess, Long>` + `findAllByOrderByNameAsc()`
-- [ ] 2.4 REFACTOR: spotless; repo test green
+- [x] 2.4 REFACTOR: spotless; repo test green
 
 ## Phase 3: DriveDocument (commit 6)
 

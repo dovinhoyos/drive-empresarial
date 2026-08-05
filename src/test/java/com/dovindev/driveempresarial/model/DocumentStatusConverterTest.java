@@ -54,6 +54,11 @@ class DocumentStatusConverterTest {
   }
 
   @Test
+  void toDb_null_mapsToNull() {
+    assertThat(converter.convertToDatabaseColumn(null)).isNull();
+  }
+
+  @Test
   void fromDb_null_mapsToNull() {
     assertThat(converter.convertToEntityAttribute(null)).isNull();
   }
