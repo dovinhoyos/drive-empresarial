@@ -1,0 +1,11 @@
+change: phase-1-foundation
+status: tasks-ready
+artifact_store: hybrid
+delivery_strategy: single-pr
+review_budget_lines: 400
+phases_completed:
+  - proposal
+  - spec
+  - design
+  - tasks
+next_action: apply
