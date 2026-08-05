@@ -1,0 +1,53 @@
+schema: spec-driven
+
+context: |
+  Java 21, Spring Boot 4.1.0, Maven.
+  Web MVC + springdoc (Swagger UI); Spring Security + JWT (jjwt 0.12.6).
+  JPA/Hibernate + PostgreSQL 16 via Flyway (ddl-auto=validate, migrations at classpath:db/migration).
+  Storage: AWS SDK S3 2.31.10 -> MinIO. Lombok, validation.
+  Layered packages: config, controller, service, repository, model, security, exception.
+  Domain: DRIVE document management (DriveProcess/DriveDocument/DriveVersion/DriveDocumentLog),
+  12 REST endpoints, state machine draft->under_review->published->archived,
+  mathematical versioning, document codification (PRC-CAL-001), S3 presigned URLs
+  + Glacier archiving, RBAC, audit trail.
+
+strict_tdd: true
+test_command: ./mvnw test
+
+testing:
+  runner: JUnit 5 (Maven Surefire)
+  layers:
+    unit: true
+    integration: true   # @DataJpaTest/@FlywayTest/@WebMvcTest + SpringBootTest; needs live PostgreSQL
+    e2e: false
+  coverage: false       # no JaCoCo configured
+  quality:
+    linter: false       # no checkstyle/PMD/SpotBugs
+    formatter: false    # no spotless; IntelliJ defaults
+    typechecker: n/a    # compiled Java (javac)
+
+rules:
+  proposal:
+    - Include migration notes from the Laravel DRIVE module (data + behavior parity)
+    - Include rollback plan for risky changes
+  specs:
+    - Use Given/When/Then for scenarios
+    - Use RFC 2119 keywords (MUST, SHALL, SHOULD, MAY)
+  design:
+    - Include sequence diagrams for complex flows (state transitions, versioning)
+    - Document architecture decisions with rationale (ADR-style)
+    - Keep S3/Glacier and presigned-URL flows explicit
+  tasks:
+    - Group by phase, use hierarchical numbering
+    - Keep tasks completable in one session
+  apply:
+    guidelines:
+      - Follow existing layered package conventions
+    tdd: true
+    test_command: ./mvnw test
+  verify:
+    test_command: ./mvnw test
+    build_command: ./mvnw -q compile
+    coverage_threshold: 0
+  archive:
+    - Warn before merging destructive deltas
