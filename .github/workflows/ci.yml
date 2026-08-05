@@ -1,0 +1,121 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  # ──────────────────────────────────────────────
+  # PR Validation (branch-pr skill rules)
+  # ──────────────────────────────────────────────
+  pr-validation:
+    name: PR Validation
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - name: Check Issue Reference
+        run: |
+          BODY=$(gh pr view ${{ github.event.pull_request.number }} --json body --jq '.body')
+          if ! echo "$BODY" | grep -qiE '(Closes|Fixes|Resolves) #[0-9]+'; then
+            echo "ERROR: PR body must contain 'Closes #N', 'Fixes #N', or 'Resolves #N'"
+            exit 1
+          fi
+          echo "OK: Issue reference found"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Check Issue Has status:approved
+        run: |
+          BODY=$(gh pr view ${{ github.event.pull_request.number }} --json body --jq '.body')
+          ISSUE_NUM=$(echo "$BODY" | grep -oiE '(Closes|Fixes|Resolves) #([0-9]+)' | head -1 | grep -oE '[0-9]+')
+          if [ -z "$ISSUE_NUM" ]; then
+            echo "ERROR: No issue number found in PR body"
+            exit 1
+          fi
+          LABELS=$(gh issue view $ISSUE_NUM --json labels --jq '.labels[].name')
+          if ! echo "$LABELS" | grep -q 'status:approved'; then
+            echo "ERROR: Issue #$ISSUE_NUM does not have 'status:approved' label"
+            exit 1
+          fi
+          echo "OK: Issue #$ISSUE_NUM has status:approved"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Check PR Has type:* Label
+        run: |
+          LABELS=$(gh pr view ${{ github.event.pull_request.number }} --json labels --jq '.labels[].name')
+          TYPE_LABELS=$(echo "$LABELS" | grep -E '^type:' || true)
+          COUNT=$(echo "$TYPE_LABELS" | grep -c 'type:' || true)
+          if [ "$COUNT" -ne 1 ]; then
+            echo "ERROR: PR must have exactly one 'type:' label (found $COUNT)"
+            exit 1
+          fi
+          echo "OK: PR has label '$TYPE_LABELS'"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Check Branch Name
+        run: |
+          BRANCH=${{ github.head_ref }}
+          if ! echo "$BRANCH" | grep -qE '^(feat|fix|chore|docs|style|refactor|perf|test|build|ci|revert)/[a-z0-9._-]+$'; then
+            echo "ERROR: Branch name '$BRANCH' does not match pattern: type/description"
+            echo "Expected: ^(feat|fix|chore|docs|style|refactor|perf|test|build|ci|revert)/[a-z0-9._-]+$"
+            exit 1
+          fi
+          echo "OK: Branch name '$BRANCH' is valid"
+
+  # ──────────────────────────────────────────────
+  # Build & Test
+  # ──────────────────────────────────────────────
+  build:
+    name: Build & Test
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: drive_empresarial
+          POSTGRES_USER: drive_user
+          POSTGRES_PASSWORD: test_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U drive_user -d drive_empresarial"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Compile
+        run: ./mvnw compile -q
+
+      - name: Run Tests
+        run: ./mvnw test -Dspring.profiles.active=test
+        env:
+          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/drive_empresarial
+          SPRING_DATASOURCE_USERNAME: drive_user
+          SPRING_DATASOURCE_PASSWORD: test_password
+          JWT_SECRET: ci-test-secret-key-must-be-at-least-32-bytes-long-for-hmac
+
+      - name: Upload Test Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: target/surefire-reports/
+          retention-days: 7
